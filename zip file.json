@@ -1,0 +1,191 @@
+{
+  "name": "zip file",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "5 14 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        16,
+        32
+      ],
+      "id": "1655b6dc-ec49-40d4-b6b6-4c283fe4fb2b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5282c56e-70c0-43e4-b7f6-3e547fcdd8c3",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        592,
+        32
+      ],
+      "id": "4e0d02f3-8e3b-4e1b-a667-8d6e43ba5bcc",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1p7Wmv4tM9JQvl-ikh90lfkNIK22gSn_roRca5fDCbY4/edit?gid=562066703#gid=562066703",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1p7Wmv4tM9JQvl-ikh90lfkNIK22gSn_roRca5fDCbY4/edit?gid=562066703#gid=562066703",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        0
+      ],
+      "id": "dad3e948-0f14-414a-a6e4-d0fc164146fb",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6x7FDINGnetVodOB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json[\"MAIL_ID\"] }}",
+        "subject": "Happy Birthday 🎉🎂",
+        "message": "=<html>\n<body>\n<h2>🎉 Happy Birthday {{$json[\"NAME\"]}} 🎂</h2>\n\n<p>Wishing you a very Happy Birthday!</p>\n\n<p>Your birthday surprise is ready.</p>\n\n<p>\nDownload your ZIP file here:\n<br>\n<a href=\"https://drive.google.com/file/d/154bK2xZCPCTT6_zVh8Rfu-8A0pVDMKkR/view?usp=drive_link\">\nClick Here 🎁\n</a>\n</p>\n\n<p>Have a wonderful day!</p>\n\n<p>Regards,<br>\nAnanthika</p>\n\n</body>\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        16
+      ],
+      "id": "74f7fcca-97d3-441b-ad30-76632ede7daa",
+      "name": "Send a message",
+      "webhookId": "22cf575a-0101-4561-b173-636604cd7c92",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "aY9H8CRj6PY3Zt6q",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Today's date (month & day only)\nconst today = new Date();\nconst currentMonth = String(today.getMonth() + 1).padStart(2, \"0\");\nconst currentDay = String(today.getDate()).padStart(2, \"0\");\n\n// Store birthday people\nconst birthdayPeople = [];\n\nfor (const item of $input.all()) {\n\n  const dob = item.json[\"DATE OF BIRTH\"];\n\n  if (!dob) {\n    continue;\n  }\n\n  // DATE OF BIRTH format: YYYY-MM-DD\n  const [year, month, day] = dob.split(\"-\");\n\n  if (month === currentMonth && day === currentDay) {\n    birthdayPeople.push({\n      json: {\n        NAME: item.json[\"NAME\"],\n        ROLL_NUMBER: item.json[\"ROLL NUMBER\"],\n        MAIL_ID: item.json[\"MAIL ID\"],\n        DATE_OF_BIRTH: item.json[\"DATE OF BIRTH\"]\n      }\n    });\n  }\n}\n\nreturn birthdayPeople;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        16
+      ],
+      "id": "da03013e-94c6-4c6e-a223-0ecdd66bc594",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "78ee4217-2a94-4c9d-9910-608892a4e5b2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ac359cec8d8cd1695eec1c133ee3d7ee11e49654899f0e781e4ae9b494c226a8"
+  },
+  "nodeGroups": [],
+  "id": "0x8P0lHSSUxYsCgs",
+  "tags": []
+}
